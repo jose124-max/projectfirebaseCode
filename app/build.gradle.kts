@@ -32,6 +32,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.mlkit:barcode-scanning:17.2.0")
     implementation("com.google.mlkit:face-detection:16.1.5")
     implementation("com.google.android.gms:play-services-mlkit-text-recognition:19.0.0")
     implementation("androidx.appcompat:appcompat:1.6.1")

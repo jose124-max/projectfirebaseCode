@@ -1,25 +1,30 @@
 package com.example.projectfirebase;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.view.View;
-import android.Manifest;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.example.projectfirebase.R;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.mlkit.vision.barcode.BarcodeScanner;
+import com.google.mlkit.vision.barcode.BarcodeScannerOptions;
+import com.google.mlkit.vision.barcode.BarcodeScanning;
+import com.google.mlkit.vision.barcode.common.Barcode;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.face.FaceDetection;
@@ -136,6 +141,43 @@ public class MainActivity extends AppCompatActivity implements OnSuccessListener
                         for (ImageLabel label : labels)
                             resultados = resultados + label.getText() + " " + label.getConfidence() +
                                     "%\n";
+                        txtResults.setText(resultados);
+                    }
+                })
+                .addOnFailureListener(this);
+    }
+    public void BarcodeScanner(View v) {
+        BarcodeScannerOptions options =
+                new BarcodeScannerOptions.Builder()
+                        .setBarcodeFormats(
+                                Barcode.FORMAT_QR_CODE,
+                                Barcode.FORMAT_AZTEC,
+                                Barcode.FORMAT_CODE_128,
+                                Barcode.FORMAT_CODE_39,
+                                Barcode.FORMAT_EAN_13
+                                // Luego añado más formatos xd
+                        )
+                        .build();
+
+        // Aqui pongo las opciones, la configuracion
+        BarcodeScanner scanner = BarcodeScanning.getClient(options);
+        // Creo un objeto InputImage a partir de la imagen seleccionada
+        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
+        // y procesamos según la api
+        scanner.process(image)
+                .addOnSuccessListener(new OnSuccessListener<List<Barcode>>() {
+                    @Override
+                    public void onSuccess(List<Barcode> barcodes) {
+                        String resultados = "";
+                        for (Barcode barcode : barcodes) {
+                            Rect bounds = barcode.getBoundingBox();
+                            Point[] corners = barcode.getCornerPoints();
+                            String rawValue = barcode.getRawValue();
+                            String displayValue = barcode.getDisplayValue(); // Obtener el valor decodificado
+                            resultados = resultados + "Tipo: " + barcode.getFormat() + "\n";
+                            resultados = resultados + "Valor Decodificado: " + displayValue + "\n";
+                            resultados = resultados + "BoundingBox: " + bounds + "\n\n";
+                        }
                         txtResults.setText(resultados);
                     }
                 })
